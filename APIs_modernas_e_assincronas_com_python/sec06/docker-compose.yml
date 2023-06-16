@@ -1,7 +1,7 @@
 services:
 
   database:
-    container_name: fast_api_geek_uni_db
+    container_name: fast_api_geek_uni_db_sec06
     image: postgres:15.1
     restart: 'no'
     volumes:
