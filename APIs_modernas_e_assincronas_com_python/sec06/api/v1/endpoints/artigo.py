@@ -5,6 +5,7 @@ from fastapi import APIRouter, status,  Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from api.v1.endpoints import usuario
+from core.database import Session
 
 from models.artigo_model import ArtigoModel
 from models.usuario_model import UsuarioModel
@@ -29,7 +30,7 @@ async def post_artigo(
     )
 
     db.add(novo_artigo)
-    await novo_artigo
+    await db.commit()
 
     return novo_artigo
 
@@ -44,7 +45,7 @@ async def get_artigos(db: AsyncSession = Depends(get_session)):
         return artigos
 
 
-@router.get("/{artigo_id}", response_model=ArtigoModel,  status_code=status.HTTP_200_OK)
+@router.get("/{artigo_id}", response_model=ArtigoSchema,  status_code=status.HTTP_200_OK)
 async def get_artigo(artigo_id:int, db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(ArtigoModel).filter(ArtigoModel.id == artigo_id)
@@ -60,7 +61,7 @@ async def get_artigo(artigo_id:int, db: AsyncSession = Depends(get_session)):
             )
 
 
-@router.put("/{artigo_id}", response_model=ArtigoModel,  status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{artigo_id}", response_model=ArtigoSchema,  status_code=status.HTTP_202_ACCEPTED)
 async def put_artigo(
     artigo_id: int,
     artigo: ArtigoSchema,
@@ -110,6 +111,6 @@ async def delete_artigo(
 
         else:
             raise HTTPException(
-                detail="Artigo não encotrado",
+                detail="Artigo não encontrado",
                 status_code=status.HTTP_404_NOT_FOUND
             )
