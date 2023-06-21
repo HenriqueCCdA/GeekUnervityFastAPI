@@ -1,28 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI Web na Geek University</title>
-    <style>
-        body {
-            background: rgb(223, 163, 164);
-        }
-    </style>
-</head>
-<body>
-    <h1>FastAPI Web</h1>
-    <div>
-        <a href="/">Home</a>
-        <a href="/servicos">Serviços</a>
-    </div>
-    <div class="container">
-        <center>
-            <h1>FastAPI Web na <u>Geek University</u></h1>
-            <span>Para mais cursos, visite nosso site clicando <a href="https://www.geekuniversity.com.br" target="_blank"></a></span>
-            <div>Usuário: {{ usuario }}</div></p>
-            <p>Estamos na página Index</p>
-        </center>
-    </div>
-</body>
-</html>
+{%extends '_base.html' %}
+{% block style%}
+<style>
+    body {
+        background: #50e200;
+    }
+</style>
+{% endblock %}
+{% block container %}
+    <center>
+        <h1>FastAPI Web na <u>Geek University</u></h1>
+        <span>Para mais cursos, visite nosso site clicando <a href="https://www.geekuniversity.com.br" target="_blank"></a></span>
+        <div>Usuário: {{ usuario }}</div></p>
+        <p>Estamos na página Index</p>
+    </center>
+{% endblock  %}
