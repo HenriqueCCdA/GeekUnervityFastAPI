@@ -26,23 +26,21 @@ class BaseCrudView:
         dados = await object_controller.get_all_crud()
 
         context = {"request": object_controller.request, "ano": datetime.now().year, "dados": dados}
-
         return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/list.html", context=context)
 
     async def object_delete(self, object_controller: BaseController, obj_id: int) -> Response:
         """Rota para deletar um objeto [DELETE]"""
-        objeto = await object_controller.get_onde_crud(id_obj=obj_id)
+        objeto = await object_controller.get_one_crud(id_obj=obj_id)
 
         if not objeto:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
         await object_controller.del_crud(obj_id=objeto.id)
 
-        return Response(object_controller.request_url_for(f"{self.template_base}_list"))
+        return Response(object_controller.request.url_for(f"{self.template_base}_list"))
 
     async def object_details(self, object_controller: BaseController, obj_id: int) -> Response:
         """Rota para apresentar os detalhes de um objeto [GET]"""
-
         objeto = await object_controller.get_one_crud(id_obj=obj_id)
 
         if not objeto:
@@ -50,7 +48,7 @@ class BaseCrudView:
 
         context = {"request": object_controller.request, "ano": datetime.now().year, "objeto": objeto}
 
-        if "details" is str(object_controller.request.url):
+        if "details" in str(object_controller.request.url):
             return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/details.html", context=context)
 
         elif "edit" in str(object_controller.request.url):

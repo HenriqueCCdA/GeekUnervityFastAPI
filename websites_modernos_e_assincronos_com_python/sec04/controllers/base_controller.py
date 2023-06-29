@@ -35,9 +35,9 @@ class BaseController:
     async def put_crud(self, obj: object) -> None:
         raise NotImplementedError("Você precisa implementar este método.")
 
-    async def del_crud(self, id_obj: object) -> None:
+    async def del_crud(self, obj_id: object) -> None:
         async with get_session() as session:
-            obj: self.model = await session.get(self.model, id_obj)
+            obj: self.model = await session.get(self.model, obj_id)
 
             if obj:
                 await session.delete(obj)

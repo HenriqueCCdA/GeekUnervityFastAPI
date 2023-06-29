@@ -38,7 +38,7 @@ class MembroController(BaseController):
 
         # Cria a sessão a insere no banco de dados
         async with get_session() as session:
-            session.ad(membro)
+            session.add(membro)
             await session.commit()
 
     async def put_crud(self, obj: object) -> None:

@@ -39,8 +39,8 @@ class MembroAdmin(BaseCrudView):
 
         self.router.routes.append(
             Route(
-                path="/membro/details/{memmbro_id:int}",
-                endpoint=self.object_details,
+                path="/membro/details/{membro_id:int}",
+                endpoint=self.object_edit,
                 methods=["GET"],
                 name="membro_details",
             )
@@ -48,7 +48,7 @@ class MembroAdmin(BaseCrudView):
 
         self.router.routes.append(
             Route(
-                path="/membro/edit/{memmbro_id:int}",
+                path="/membro/edit/{membro_id:int}",
                 endpoint=self.object_edit,
                 methods=["GET", "POST"],
                 name="membro_edit",
@@ -57,7 +57,7 @@ class MembroAdmin(BaseCrudView):
 
         self.router.routes.append(
             Route(
-                path="/membro/delete/{memmbro_id:int}",
+                path="/membro/delete/{membro_id:int}",
                 endpoint=self.object_delete,
                 methods=["DELETE"],
                 name="membro_delete",
@@ -119,7 +119,7 @@ class MembroAdmin(BaseCrudView):
             }
             return settings.TEMPLATES.TemplateResponse("admin/membro/create.html", context=context)
 
-        return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_201_CREATED)
+        return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_302_FOUND)
 
     async def object_edit(self, request: Request):
         """Rota para carregar o template do formulário de edição e atualizar um objeto [GET, POST]"""
@@ -156,7 +156,7 @@ class MembroAdmin(BaseCrudView):
             }
             return settings.TEMPLATES.TemplateResponse("admin/membro/edit.html", context=context)
 
-        return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_202_ACCEPTED)
+        return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_302_FOUND)
 
 
 membro_admin = MembroAdmin()
