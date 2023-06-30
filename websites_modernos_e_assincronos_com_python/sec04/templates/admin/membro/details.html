@@ -1,14 +1,12 @@
-{% extends "admin/_base.html" %}
-
-{% block content%}
-
+{% extends 'admin/_base.html' %}
+{% block content %}
 <h1 class="h3 mb-2 text-gray-800">Membro</h1>
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">ID: {{ objeto.id }}</h6>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
+        <div calss="table-responsive">
             <table class="table table-bordered" id="dataTable" width="100%" cellscpacing="0">
                 <thead>
                     <tr>
@@ -21,17 +19,7 @@
                     <tr>
                         <td>{{ objeto.nome }}</td>
                         <td>{{ objeto.funcao }}</td>
-                        <td>
-                            <a
-                                href="{{ url_for('media', path=objeto.imagem)}}"
-                                target="_blank">
-                            </a>
-                            <img
-                                src="{{ url_for('media', path=objeto.imagem)}}"
-                                width="7%"
-                                height="auto"
-                            />
-                        </td>
+                        <td><a href="{{ url_for('media', path='membro/' + objeto.imagem) }}" target="_blank"><img src="{{ url_for('media', path='membro/' + objeto.imagem) }}" width="7%" height="auto"/></a></td>
                     </tr>
                 </tbody>
             </table>
@@ -44,13 +32,7 @@
                     </a>
                 </div>
                 <div class="col">
-                    <a
-                        href=""
-                        data-url="{{ url_for('membro_delete', membro_id=objeto.id) }}"
-                        data-toggle="modal"
-                        data-target="#modal-delete"
-                        class="btn btn-danger"
-                    >
+                    <a href="#" data-url="{{ url_for('membro_delete', membro_id=objeto.id) }}" data-toggle="modal" data-target="#modal-delete" class="btn btn-danger">
                         Deletar
                     </a>
                 </div>
@@ -63,6 +45,5 @@
         </div>
     </div>
 </div>
-
-{% include "admin/modals/delete.html" %}
+{% include 'admin/modals/delete.html' %}
 {% endblock %}
