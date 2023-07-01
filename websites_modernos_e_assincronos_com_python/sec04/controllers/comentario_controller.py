@@ -9,23 +9,23 @@ class ComentarioController(BaseController):
 
     def __init__(self, request: Request) -> None:
         super().__init__(request, ComentarioModel)
-    
+
     async def post_crud(self) -> None:
         # Recebe dados do form
         form = await self.request.form()
-        
-        post_id: int = form.get('post')
+
+        obj_id: int = form.get('post')
         autor: str = form.get('autor')
         texto: str = form.get('texto')
 
         # Instanciar o objeto
-        comentario: ComentarioModel = ComentarioModel(id_post=int(post_id), autor=autor, texto=texto)
- 
+        comentario: ComentarioModel = ComentarioModel(id_post=int(obj_id), autor=autor, texto=texto)
+
         # Cria a sessão e insere no banco de dados
         async with get_session() as session:
             session.add(comentario)
             await session.commit()
- 
+
 
     async def put_crud(self, obj: object) -> None:
         async with get_session() as session:
@@ -35,16 +35,15 @@ class ComentarioController(BaseController):
                 # Recebe os dados do form
                 form = await self.request.form()
 
-                post_id: int = form.get('post')
+                obj_id: int = form.get('post')
                 autor: str = form.get('autor')
                 texto: str = form.get('texto')
 
-                if post_id and int(post_id) != comentario.id_post:
-                    comentario.id_post = int(post_id)
+                if obj_id and int(obj_id) != comentario.id_post:
+                    comentario.id_post = int(obj_id)
                 if autor and autor != comentario.autor:
                     comentario.autor = autor
                 if texto and texto != comentario.texto:
                     comentario.texto = texto
-                
-                await session.commit()
 
+                await session.commit()

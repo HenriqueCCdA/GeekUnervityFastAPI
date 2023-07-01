@@ -8,7 +8,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ url_for('post_edit', post_id=objeto.id) }}" autocomplete="off" enctype="multipart/form-data">
+    <form method="post" action="{{ url_for('post_edit', obj_id=objeto.id) }}" autocomplete="off" enctype="multipart/form-data">
 
         <div class="mb-3">
             <label for="titulo" class="form-label">Título</label>
@@ -31,7 +31,7 @@
                 {% else %}
                 <option selected disabled>Ainda não existem autores cadastrados</option>
                 {% endif %}
-            </select>            
+            </select>
         </div>
 
         <div class="mb-3">
@@ -50,7 +50,7 @@
                 {% endfor %}
             {% else %}
                     <span class="badge badge-pill badge-warning">Ainda não existem tags cadastradas.</span>
-            {% endif %}              
+            {% endif %}
         </div>
 
         <button type="submit" class="btn btn-primary">Salvar</button>

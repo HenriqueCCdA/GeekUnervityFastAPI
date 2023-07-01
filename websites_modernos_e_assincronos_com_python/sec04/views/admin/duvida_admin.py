@@ -10,6 +10,7 @@ from fastapi.exceptions import HTTPException
 from core.configs import settings
 from controllers.duvida_controller import DuvidaController
 from views.admin.base_crud_view import BaseCrudView
+from models.area_model import AreaModel
 
 
 
@@ -23,9 +24,9 @@ class DuvidaAdmin(BaseCrudView):
         self.router.routes.append(Route(path='/duvida/details/{duvida_id:int}', endpoint=self.object_edit, methods=["GET",], name='duvida_details'))
         self.router.routes.append(Route(path='/duvida/edit/{duvida_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='duvida_edit'))
         self.router.routes.append(Route(path='/duvida/delete/{duvida_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='duvida_delete'))
-       
+
         super().__init__('duvida')
-    
+
 
     async def object_list(self, request: Request) -> Response:
         """
@@ -45,7 +46,7 @@ class DuvidaAdmin(BaseCrudView):
         duvida_id: int = request.path_params["duvida_id"]
 
         return await super().object_delete(object_controller=duvida_controller, obj_id=duvida_id)
-    
+
 
     async def object_create(self, request: Request) -> Response:
         """
@@ -56,11 +57,11 @@ class DuvidaAdmin(BaseCrudView):
         # Se o request for GET
         if request.method == 'GET':
             # Adicionar o request e as áreas no context
-            areas = await duvida_controller.get_areas
+            areas = await duvida_controller.get_objetos(model_obj=AreaModel)
             context = {"request": duvida_controller.request, "ano": datetime.now().year, "areas": areas}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/duvida/create.html", context=context)
-        
+
         # Se o request for POST
         # Recebe os dados do form
         form = await request.form()
@@ -80,10 +81,10 @@ class DuvidaAdmin(BaseCrudView):
                 "objeto": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/duvida/create.html", context=context)
-        
+
         return RedirectResponse(request.url_for("duvida_list"), status_code=status.HTTP_302_FOUND)
 
-    
+
     async def object_edit(self, request: Request) -> Response:
         """
         Rota para carregar o template do formulário de edição e atualizar uma dúvida [GET, POST]
@@ -91,7 +92,7 @@ class DuvidaAdmin(BaseCrudView):
         duvida_controller: DuvidaController = DuvidaController(request)
 
         duvida_id: int = request.path_params["duvida_id"]
-        
+
         # Se o request for GET
         if request.method == 'GET' and 'details' in str(duvida_controller.request.url):
             return await super().object_details(object_controller=duvida_controller, obj_id=duvida_id)
@@ -101,19 +102,19 @@ class DuvidaAdmin(BaseCrudView):
 
             if not duvida:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-            
+
             # Adicionar o request e as áreas no context
-            areas = await duvida_controller.get_areas
+            areas = await duvida_controller.get_objetos(model_obj=AreaModel)
             context = {"request": duvida_controller.request, "ano": datetime.now().year, "objeto": duvida, "areas": areas}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/duvida/edit.html", context=context)
-        
+
         # Se o request for POST
         duvida = await duvida_controller.get_one_crud(id_obj=duvida_id)
 
         if not duvida:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         # Recebe os dados do form
         form = await request.form()
         dados: set = None
@@ -132,7 +133,7 @@ class DuvidaAdmin(BaseCrudView):
                 "dados": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/duvida/edit.html", context=context)
-        
+
         return RedirectResponse(request.url_for("duvida_list"), status_code=status.HTTP_302_FOUND)
 
 

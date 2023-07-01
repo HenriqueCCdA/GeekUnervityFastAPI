@@ -20,12 +20,12 @@ class MembroAdmin(BaseCrudView):
 
         self.router.routes.append(Route(path='/membro/list', endpoint=self.object_list, methods=["GET",], name='membro_list'))
         self.router.routes.append(Route(path='/membro/create', endpoint=self.object_create, methods=["GET", "POST"], name='membro_create'))
-        self.router.routes.append(Route(path='/membro/details/{membro_id:int}', endpoint=self.object_edit, methods=["GET",], name='membro_details'))
-        self.router.routes.append(Route(path='/membro/edit/{membro_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='membro_edit'))
-        self.router.routes.append(Route(path='/membro/delete/{membro_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='membro_delete'))
-       
+        self.router.routes.append(Route(path='/membro/details/{obj_id:int}', endpoint=self.object_edit, methods=["GET",], name='membro_details'))
+        self.router.routes.append(Route(path='/membro/edit/{obj_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='membro_edit'))
+        self.router.routes.append(Route(path='/membro/delete/{obj_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='membro_delete'))
+
         super().__init__('membro')
-    
+
 
     async def object_list(self, request: Request) -> Response:
         """
@@ -42,10 +42,10 @@ class MembroAdmin(BaseCrudView):
         """
         membro_controller: MembroController = MembroController(request)
 
-        membro_id: int = request.path_params["membro_id"]
+        obj_id: int = request.path_params["obj_id"]
 
-        return await super().object_delete(object_controller=membro_controller, obj_id=membro_id)
-    
+        return await super().object_delete(object_controller=membro_controller, obj_id=obj_id)
+
 
     async def object_create(self, request: Request) -> Response:
         """
@@ -59,7 +59,7 @@ class MembroAdmin(BaseCrudView):
             context = {"request": membro_controller.request, "ano": datetime.now().year}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/membro/create.html", context=context)
-        
+
         # Se o request for POST
         # Recebe os dados do form
         form = await request.form()
@@ -78,28 +78,28 @@ class MembroAdmin(BaseCrudView):
                 "objeto": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/membro/create.html", context=context)
-        
+
         return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_302_FOUND)
 
-    
+
     async def object_edit(self, request: Request) -> Response:
         """
         Rota para carregar o template do formulário de edição e atualizar um membro [GET, POST]
         """
         membro_controller: MembroController = MembroController(request)
 
-        membro_id: int = request.path_params["membro_id"]
-        
+        obj_id: int = request.path_params["obj_id"]
+
         # Se o request for GET
         if request.method == 'GET':
-            return await super().object_details(object_controller=membro_controller, obj_id=membro_id)
-        
+            return await super().object_details(object_controller=membro_controller, obj_id=obj_id)
+
         # Se o request for POST
-        membro = await membro_controller.get_one_crud(id_obj=membro_id)
+        membro = await membro_controller.get_one_crud(id_obj=obj_id)
 
         if not membro:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         # Recebe os dados do form
         form = await request.form()
         dados: set = None
@@ -109,7 +109,7 @@ class MembroAdmin(BaseCrudView):
         except ValueError as err:
             nome: str = form.get('nome')
             funcao: str = form.get('funcao')
-            dados = {"id": membro_id, "nome": nome, "funcao": funcao}
+            dados = {"id": obj_id, "nome": nome, "funcao": funcao}
             context = {
                 "request": request,
                 "ano": datetime.now().year,
@@ -117,7 +117,7 @@ class MembroAdmin(BaseCrudView):
                 "dados": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/membro/edit.html", context=context)
-        
+
         return RedirectResponse(request.url_for("membro_list"), status_code=status.HTTP_302_FOUND)
 
 

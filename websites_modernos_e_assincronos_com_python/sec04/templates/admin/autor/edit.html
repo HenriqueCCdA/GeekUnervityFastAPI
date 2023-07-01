@@ -8,7 +8,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ url_for('autor_edit', autor_id=objeto.id) }}" autocomplete="off" enctype="multipart/form-data">
+    <form method="post" action="{{ url_for('autor_edit', obj_id=objeto.id) }}" autocomplete="off" enctype="multipart/form-data">
 
         <div class="mb-3">
             <label for="nome" class="form-label">Nome</label>
@@ -27,7 +27,7 @@
                     <input class="form-check-input" type="checkbox" id="tag" name="tag" value="{{tag.id}}" {% if tag.id in objeto.get_tags_list %} checked {% endif %}>
                     <label class="form-check-label" for="tag">{{tag.tag}}</label>
                 </div>
-            {% endfor %}              
+            {% endfor %}
         </div>
 
         <button type="submit" class="btn btn-primary">Salvar</button>

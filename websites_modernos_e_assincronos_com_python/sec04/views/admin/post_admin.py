@@ -10,6 +10,8 @@ from fastapi.exceptions import HTTPException
 
 from core.configs import settings
 from controllers.post_controller import PostController
+from models.autor_model import AutorModel
+from models.tag_model import TagModel
 from views.admin.base_crud_view import BaseCrudView
 
 
@@ -21,12 +23,12 @@ class PostAdmin(BaseCrudView):
 
         self.router.routes.append(Route(path='/post/list', endpoint=self.object_list, methods=["GET",], name='post_list'))
         self.router.routes.append(Route(path='/post/create', endpoint=self.object_create, methods=["GET", "POST"], name='post_create'))
-        self.router.routes.append(Route(path='/post/details/{post_id:int}', endpoint=self.object_edit, methods=["GET",], name='post_details'))
-        self.router.routes.append(Route(path='/post/edit/{post_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='post_edit'))
-        self.router.routes.append(Route(path='/post/delete/{post_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='post_delete'))
-       
+        self.router.routes.append(Route(path='/post/details/{obj_id:int}', endpoint=self.object_edit, methods=["GET",], name='post_details'))
+        self.router.routes.append(Route(path='/post/edit/{obj_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='post_edit'))
+        self.router.routes.append(Route(path='/post/delete/{obj_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='post_delete'))
+
         super().__init__('post')
-    
+
 
     async def object_list(self, request: Request) -> Response:
         """
@@ -43,10 +45,10 @@ class PostAdmin(BaseCrudView):
         """
         post_controller: PostController = PostController(request)
 
-        post_id: int = request.path_params["post_id"]
+        obj_id: int = request.path_params["obj_id"]
 
-        return await super().object_delete(object_controller=post_controller, obj_id=post_id)
-    
+        return await super().object_delete(object_controller=post_controller, obj_id=obj_id)
+
 
     async def object_create(self, request: Request) -> Response:
         """
@@ -57,12 +59,12 @@ class PostAdmin(BaseCrudView):
         # Se o request for GET
         if request.method == 'GET':
             # Adicionar o request, os autores e as tags no context
-            autores = await post_controller.get_autores()
-            tags = await post_controller.get_tags()
+            autores = await post_controller.get_objetos(AutorModel)
+            tags = await post_controller.get_objetos(TagModel)
             context = {"request": post_controller.request, "ano": datetime.now().year, "autores": autores, "tags": tags}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/post/create.html", context=context)
-        
+
         # Se o request for POST
         # Recebe os dados do form
         form = await request.form()
@@ -83,41 +85,41 @@ class PostAdmin(BaseCrudView):
                 "objeto": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/post/create.html", context=context)
-        
+
         return RedirectResponse(request.url_for("post_list"), status_code=status.HTTP_302_FOUND)
 
-    
+
     async def object_edit(self, request: Request) -> Response:
         """
         Rota para carregar o template do formulário de edição e atualizar um post [GET, POST]
         """
         post_controller: PostController = PostController(request)
 
-        post_id: int = request.path_params["post_id"]
-        
+        obj_id: int = request.path_params["obj_id"]
+
         # Se o request for GET
         if request.method == 'GET' and 'details' in str(post_controller.request.url):
-            return await super().object_details(object_controller=post_controller, obj_id=post_id)
-        
+            return await super().object_details(object_controller=post_controller, obj_id=obj_id)
+
         elif request.method == 'GET' and 'edit' in str(post_controller.request.url):
-            post = await post_controller.get_one_crud(id_obj=post_id)
+            post = await post_controller.get_one_crud(id_obj=obj_id)
 
             if not post:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-            
+
             # Adicionar o request, os autores e as tags no context
-            autores = await post_controller.get_autores()
-            tags = await post_controller.get_tags()
+            autores = await post_controller.get_objetos(AutorModel)
+            tags = await post_controller.get_objetos(TagModel)
             context = {"request": post_controller.request, "ano": datetime.now().year, "objeto": post, "tags": tags, "autores": autores}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/post/edit.html", context=context)
-        
+
         # Se o request for POST
-        post = await post_controller.get_one_crud(id_obj=post_id)
+        post = await post_controller.get_one_crud(id_obj=obj_id)
 
         if not post:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         # Recebe os dados do form
         form = await request.form()
         dados: set = None
@@ -129,7 +131,7 @@ class PostAdmin(BaseCrudView):
             tags: List[object] = form.get('tags')
             texto: str = form.get('texto')
             autor: int = form.get('autor')
-            dados = {"id": post_id, "titulo": titulo, "tags": tags, "texto": texto, "autor": autor}
+            dados = {"id": obj_id, "titulo": titulo, "tags": tags, "texto": texto, "autor": autor}
             context = {
                 "request": request,
                 "ano": datetime.now().year,
@@ -137,7 +139,7 @@ class PostAdmin(BaseCrudView):
                 "dados": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/post/edit.html", context=context)
-        
+
         return RedirectResponse(request.url_for("post_list"), status_code=status.HTTP_302_FOUND)
 
 

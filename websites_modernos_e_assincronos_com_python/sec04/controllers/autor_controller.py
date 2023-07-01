@@ -30,12 +30,12 @@ class AutorController(BaseController):
             result = await session.execute(query)
 
             return result.scalars().unique().all()
-    
+
 
     async def post_crud(self) -> None:
         # Recebe dados do form
         form = await self.request.form()
-        
+
         nome: str = form.get('nome')
         imagem: UploadFile = form.get('imagem')
         tags: List[str] = form.getlist('tag')
@@ -55,12 +55,12 @@ class AutorController(BaseController):
         # Fazer o upload do arquivo
         async with async_open(f"{settings.MEDIA}/autor/{novo_nome}", "wb") as afile:
             await afile.write(imagem.file.read())
-        
+
         # Cria a sessão e insere no banco de dados
         async with get_session() as session:
             session.add(autor)
             await session.commit()
- 
+
 
     async def put_crud(self, obj: object) -> None:
         async with get_session() as session:
@@ -82,7 +82,7 @@ class AutorController(BaseController):
                     await session.commit()
                     # Busca e adiciona as tags
                     for id_tag in tags:
-                        tag = await self.get_tag(id_tag=int(id_tag))
+                        tag = await self.get_objeto(model_obj=TagModel, id_obj=int(id_tag))
                         # Operação para juntar o objeto tag que vem de outra
                         # sessão com o objeto autor que está nesta sessão.
                         tag_local = await session.merge(tag)
@@ -96,4 +96,3 @@ class AutorController(BaseController):
                     async with async_open(f"{settings.MEDIA}/autor/{novo_nome}", "wb") as afile:
                         await afile.write(imagem.file.read())
                 await session.commit()
-

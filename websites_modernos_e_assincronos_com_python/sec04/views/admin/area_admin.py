@@ -16,16 +16,8 @@ from views.admin.base_crud_view import BaseCrudView
 class AreaAdmin(BaseCrudView):
 
     def __init__(self) -> None:
-        self.router = APIRouter()
-
-        self.router.routes.append(Route(path='/area/list', endpoint=self.object_list, methods=["GET",], name='area_list'))
-        self.router.routes.append(Route(path='/area/create', endpoint=self.object_create, methods=["GET", "POST"], name='area_create'))
-        self.router.routes.append(Route(path='/area/details/{area_id:int}', endpoint=self.object_edit, methods=["GET",], name='area_details'))
-        self.router.routes.append(Route(path='/area/edit/{area_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='area_edit'))
-        self.router.routes.append(Route(path='/area/delete/{area_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='area_delete'))
-       
         super().__init__('area')
-    
+
 
     async def object_list(self, request: Request) -> Response:
         """
@@ -45,7 +37,7 @@ class AreaAdmin(BaseCrudView):
         area_id: int = request.path_params["area_id"]
 
         return await super().object_delete(object_controller=area_controller, obj_id=area_id)
-    
+
 
     async def object_create(self, request: Request) -> Response:
         """
@@ -59,7 +51,7 @@ class AreaAdmin(BaseCrudView):
             context = {"request": area_controller.request, "ano": datetime.now().year}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/area/create.html", context=context)
-        
+
         # Se o request for POST
         # Recebe os dados do form
         form = await request.form()
@@ -77,10 +69,10 @@ class AreaAdmin(BaseCrudView):
                 "objeto": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/area/create.html", context=context)
-        
+
         return RedirectResponse(request.url_for("area_list"), status_code=status.HTTP_302_FOUND)
 
-    
+
     async def object_edit(self, request: Request) -> Response:
         """
         Rota para carregar o template do formulário de edição e atualizar uma area [GET, POST]
@@ -88,17 +80,17 @@ class AreaAdmin(BaseCrudView):
         area_controller: AreaController = AreaController(request)
 
         area_id: int = request.path_params["area_id"]
-        
+
         # Se o request for GET
         if request.method == 'GET':
             return await super().object_details(object_controller=area_controller, obj_id=area_id)
-        
+
         # Se o request for POST
         area_obj = await area_controller.get_one_crud(id_obj=area_id)
 
         if not area_obj:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         # Recebe os dados do form
         form = await request.form()
         dados: set = None
@@ -115,7 +107,7 @@ class AreaAdmin(BaseCrudView):
                 "dados": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/area/edit.html", context=context)
-        
+
         return RedirectResponse(request.url_for("area_list"), status_code=status.HTTP_302_FOUND)
 
 

@@ -17,24 +17,24 @@ class PostController(BaseController):
 
     def __init__(self, request: Request) -> None:
         super().__init__(request, PostModel)
-    
+
     async def post_crud(self) -> None:
         # Recebe dados do form
         form = await self.request.form()
-        
+
         titulo: str = form.get('titulo')
         tags: List[str] = form.getlist('tag')
         imagem: UploadFile = form.get('imagem')
         texto: str = form.get('texto')
-        autor_id: int = form.get('autor')
+        obj_id: int = form.get('autor')
 
         # Nome aleatório para a imagem
         arquivo_ext: str = imagem.filename.split('.')[-1]
         novo_nome: str = f"{str(uuid4())}.{arquivo_ext}"
 
         # Instanciar o objeto
-        post: PostModel = PostModel(titulo=titulo, imagem=novo_nome, texto=texto, id_autor=int(autor_id))
-        
+        post: PostModel = PostModel(titulo=titulo, imagem=novo_nome, texto=texto, id_autor=int(obj_id))
+
         # Busca e adiciona as tags
         for id_tag in tags:
             tag = await self.get_tag(id_tag=int(id_tag))
@@ -43,12 +43,12 @@ class PostController(BaseController):
         # Fazer o upload do arquivo
         async with async_open(f"{settings.MEDIA}/post/{novo_nome}", "wb") as afile:
             await afile.write(imagem.file.read())
-        
+
         # Cria a sessão e insere no banco de dados
         async with get_session() as session:
             session.add(post)
             await session.commit()
- 
+
 
     async def put_crud(self, obj: object) -> None:
         async with get_session() as session:
@@ -62,7 +62,7 @@ class PostController(BaseController):
                 tags: List[str] = form.getlist('tag')
                 imagem: UploadFile = form.get('imagem')
                 texto: str = form.get('texto')
-                autor_id: int = form.get('autor')
+                obj_id: int = form.get('autor')
 
                 if titulo and titulo != post.titulo:
                     post.titulo = titulo
@@ -79,8 +79,8 @@ class PostController(BaseController):
                         post.tags.append(tag_local)
                 if texto and texto != post.texto:
                     post.texto = texto
-                if autor_id and autor_id != post.autor.id:
-                    post.id_autor = int(autor_id)
+                if obj_id and obj_id != post.autor.id:
+                    post.id_autor = int(obj_id)
                 if imagem.filename:
                     # Gera um nome aleatório
                     arquivo_ext: str = imagem.filename.split('.')[-1]
@@ -90,4 +90,3 @@ class PostController(BaseController):
                     async with async_open(f"{settings.MEDIA}/post/{novo_nome}", "wb") as afile:
                         await afile.write(imagem.file.read())
                 await session.commit()
-

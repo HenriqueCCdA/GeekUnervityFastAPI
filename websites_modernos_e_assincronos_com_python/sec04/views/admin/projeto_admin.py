@@ -20,12 +20,12 @@ class ProjetoAdmin(BaseCrudView):
 
         self.router.routes.append(Route(path='/projeto/list', endpoint=self.object_list, methods=["GET",], name='projeto_list'))
         self.router.routes.append(Route(path='/projeto/create', endpoint=self.object_create, methods=["GET", "POST"], name='projeto_create'))
-        self.router.routes.append(Route(path='/projeto/details/{projeto_id:int}', endpoint=self.object_edit, methods=["GET",], name='projeto_details'))
-        self.router.routes.append(Route(path='/projeto/edit/{projeto_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='projeto_edit'))
-        self.router.routes.append(Route(path='/projeto/delete/{projeto_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='projeto_delete'))
-       
+        self.router.routes.append(Route(path='/projeto/details/{obj_id:int}', endpoint=self.object_edit, methods=["GET",], name='projeto_details'))
+        self.router.routes.append(Route(path='/projeto/edit/{obj_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name='projeto_edit'))
+        self.router.routes.append(Route(path='/projeto/delete/{obj_id:int}', endpoint=self.object_delete, methods=["DELETE",], name='projeto_delete'))
+
         super().__init__('projeto')
-    
+
 
     async def object_list(self, request: Request) -> Response:
         """
@@ -42,10 +42,10 @@ class ProjetoAdmin(BaseCrudView):
         """
         projeto_controller: ProjetoController = ProjetoController(request)
 
-        projeto_id: int = request.path_params["projeto_id"]
+        obj_id: int = request.path_params["obj_id"]
 
-        return await super().object_delete(object_controller=projeto_controller, obj_id=projeto_id)
-    
+        return await super().object_delete(object_controller=projeto_controller, obj_id=obj_id)
+
 
     async def object_create(self, request: Request) -> Response:
         """
@@ -59,7 +59,7 @@ class ProjetoAdmin(BaseCrudView):
             context = {"request": projeto_controller.request, "ano": datetime.now().year}
 
             return settings.TEMPLATES.TemplateResponse(f"admin/projeto/create.html", context=context)
-        
+
         # Se o request for POST
         # Recebe os dados do form
         form = await request.form()
@@ -79,28 +79,28 @@ class ProjetoAdmin(BaseCrudView):
                 "objeto": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/projeto/create.html", context=context)
-        
+
         return RedirectResponse(request.url_for("projeto_list"), status_code=status.HTTP_302_FOUND)
 
-    
+
     async def object_edit(self, request: Request) -> Response:
         """
         Rota para carregar o template do formulário de edição e atualizar um projeto [GET, POST]
         """
         projeto_controller: ProjetoController = ProjetoController(request)
 
-        projeto_id: int = request.path_params["projeto_id"]
-        
+        obj_id: int = request.path_params["obj_id"]
+
         # Se o request for GET
         if request.method == 'GET':
-            return await super().object_details(object_controller=projeto_controller, obj_id=projeto_id)
-        
+            return await super().object_details(object_controller=projeto_controller, obj_id=obj_id)
+
         # Se o request for POST
-        projeto = await projeto_controller.get_one_crud(id_obj=projeto_id)
+        projeto = await projeto_controller.get_one_crud(id_obj=obj_id)
 
         if not projeto:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         # Recebe os dados do form
         form = await request.form()
         dados: set = None
@@ -111,7 +111,7 @@ class ProjetoAdmin(BaseCrudView):
             titulo: str = form.get('titulo')
             descricao_inicial: str = form.get('descricao_inicial')
             descricao_final: str = form.get('descricao_final')
-            dados = {"id": projeto_id, "titulo": titulo, "descricao_inicial": descricao_inicial, "descricao_final": descricao_final}
+            dados = {"id": obj_id, "titulo": titulo, "descricao_inicial": descricao_inicial, "descricao_final": descricao_final}
             context = {
                 "request": request,
                 "ano": datetime.now().year,
@@ -119,7 +119,7 @@ class ProjetoAdmin(BaseCrudView):
                 "dados": dados
             }
             return settings.TEMPLATES.TemplateResponse("admin/projeto/edit.html", context=context)
-        
+
         return RedirectResponse(request.url_for("projeto_list"), status_code=status.HTTP_302_FOUND)
 
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from fastapi import status
+from fastapi import APIRouter, status
+from starlette.routing import Route
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
 
@@ -13,7 +14,18 @@ class BaseCrudView:
 
     def __init__(self, template_base: str) -> None:
         self.template_base: str = template_base
-    
+
+        self.router = APIRouter()
+
+        base = self.template_base
+
+        self.router.routes.append(Route(path=f'/{base}/list', endpoint=self.object_list, methods=["GET",], name=f"{base}_list"))
+        self.router.routes.append(Route(path=f'/{base}/create', endpoint=self.object_create, methods=["GET", "POST"], name=f"{base}_create"))
+        self.router.routes.append(Route(path=f'/{base}/details/'+'{obj_id:int}', endpoint=self.object_edit, methods=["GET",], name=f"{base}_details"))
+        self.router.routes.append(Route(path=f'/{base}/edit/'+'{obj_id:int}', endpoint=self.object_edit, methods=["GET", "POST"], name=f"{base}_edit"))
+        self.router.routes.append(Route(path=f'/{base}/delete/'+'{obj_id:int}', endpoint=self.object_delete, methods=["DELETE",], name=f"{base}_delete"))
+
+
 
     async def object_create(self) -> Response:
         """
@@ -27,7 +39,7 @@ class BaseCrudView:
         Rota para carregar o template do formulário de edição e atualizar um objeto [GET, POST]
         """
         raise NotImplementedError("Você precisa implementar este método.")
-     
+
 
     async def object_list(self, object_controller: BaseController) -> Response:
         """
@@ -48,7 +60,7 @@ class BaseCrudView:
 
         if not objeto:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         await object_controller.del_crud(id_obj=objeto.id)
 
 
@@ -63,15 +75,14 @@ class BaseCrudView:
 
         if not objeto:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-        
+
         context = {"request": object_controller.request, "ano": datetime.now().year, "objeto": objeto}
 
         if 'details' in str(object_controller.request.url):
             return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/details.html", context=context)
-        
+
         elif 'edit' in str(object_controller.request.url):
             return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/edit.html", context=context)
-        
+
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
