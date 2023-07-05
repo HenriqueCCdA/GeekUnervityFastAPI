@@ -4,7 +4,7 @@ from fastapi.responses import Response, RedirectResponse
 from fastapi import status
 
 from core.configs import settings
-from core.auth import set_auth
+from core.auth import set_auth, unset_auth
 
 router = APIRouter()
 
@@ -105,5 +105,14 @@ async def post_login(request: Request) -> Response:
 
     # Adiciona o cookie na response
     set_auth(response=response, membro_id=21)
+
+    return response
+
+
+@router.get("/logout", name="logout")
+async def  logout(request: Request) -> Response:
+    response = RedirectResponse(request.url_for("index"), status_code=status.HTTP_302_FOUND)
+
+    unset_auth(response=response)
 
     return response

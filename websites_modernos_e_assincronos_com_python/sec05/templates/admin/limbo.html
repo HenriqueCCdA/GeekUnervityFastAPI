@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limbo</title>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', path='admin/img/shall.jpg') }}");
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: 25%;
+            color: white;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for("index" )}}">Voltar para uma área segura</a>
+</body>
+</html>
