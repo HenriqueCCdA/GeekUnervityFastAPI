@@ -1,10 +1,14 @@
+import select
+from typing import Optional
 from fastapi.requests import Request
 from fastapi import UploadFile
+from sqlalchemy.future import select
 
 from aiofile import async_open
 
 from uuid import uuid4
 
+from core.auth import gerar_hash_senha, verificar_senha
 from core.configs import settings
 from core.database import get_session
 from models.membro_model import MembroModel
@@ -24,14 +28,15 @@ class MembroController(BaseController):
         funcao: str = form.get('funcao')
         imagem: UploadFile = form.get('imagem')
         email: str = form.get('email')
-        senha: str = form.get('senha') # Falta adicionar hash
+        senha: str = form.get('senha')
+        hash_senha: str = gerar_hash_senha(senha=senha)
 
         # Nome aleatório para a imagem
         arquivo_ext: str = imagem.filename.split('.')[-1]
         novo_nome: str = f"{str(uuid4())}.{arquivo_ext}"
 
         # Instanciar o objeto
-        membro: MembroModel = MembroModel(nome=nome, funcao=funcao, imagem=novo_nome, email=email, senha=senha)
+        membro: MembroModel = MembroModel(nome=nome, funcao=funcao, imagem=novo_nome, email=email, senha=hash_senha)
 
         # Fazer o upload do arquivo
         async with async_open(f"{settings.MEDIA}/membro/{novo_nome}", "wb") as afile:
@@ -55,7 +60,8 @@ class MembroController(BaseController):
                 funcao: str = form.get('funcao')
                 imagem: UploadFile = form.get('imagem')
                 email: str = form.get('email')
-                senha: str = form.get('senha') # Falta adicionar hash
+                senha: str = form.get('senha')
+                hash_senha: str = gerar_hash_senha(senha=senha)
 
                 if nome and nome != membro.nome:
                     membro.nome = nome
@@ -63,8 +69,8 @@ class MembroController(BaseController):
                     membro.funcao = funcao
                 if email and email != membro.email:
                     membro.email = email
-                if senha and senha != membro.senha:
-                    membro.senha = senha # falta add hash
+                if senha and hash_senha != membro.senha:
+                    membro.senha = hash_senha
                 if imagem.filename:
                     # Gera um nome aleatório
                     arquivo_ext: str = imagem.filename.split('.')[-1]
@@ -74,3 +80,19 @@ class MembroController(BaseController):
                     async with async_open(f"{settings.MEDIA}/{novo_nome}", "wb") as afile:
                         await afile.write(imagem.file.read())
                 await session.commit()
+
+    async def login_membro(self, email: str, senha: str) -> Optional[MembroModel]:
+        """Busca e retorna o membro de acordo com os dados de acesso"""
+
+        async with get_session() as session:
+            query = select(MembroModel).filter(MembroModel.email == email)
+            results = await session.execute(query)
+
+            membro = results.scalar_one_or_none()
+
+            if not membro:
+                return None
+            if not verificar_senha(senha=senha, hash_senha=membro.senha):
+                return None
+
+            return membro

@@ -1,7 +1,11 @@
+from curses.ascii import HT
 from fastapi.routing import APIRouter
 from fastapi.requests import Request
 from fastapi.responses import Response, RedirectResponse
 from fastapi import status
+from fastapi.exceptions import HTTPException
+from controllers.membro_controller import MembroController
+
 
 from core.configs import settings
 from core.auth import set_auth, unset_auth
@@ -101,16 +105,28 @@ async def get_login(request: Request) -> Response:
 
 @router.post("/login", name="post_login")
 async def post_login(request: Request) -> Response:
+    membro_controller: MembroController = MembroController(request)
+
+    #  Receber dados do form
+    form = await request.form()
+    email: str = form.get("email")
+    senha: str = form.get("senha")
+
+    membro = await membro_controller.login_membro(email=email, senha=senha)
+
+    if not membro:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
     response = RedirectResponse(request.url_for("admin_index"), status_code=status.HTTP_302_FOUND)
 
     # Adiciona o cookie na response
-    set_auth(response=response, membro_id=21)
+    set_auth(response=response, membro_id=membro.id)
 
     return response
 
 
 @router.get("/logout", name="logout")
-async def  logout(request: Request) -> Response:
+async def logout(request: Request) -> Response:
     response = RedirectResponse(request.url_for("index"), status_code=status.HTTP_302_FOUND)
 
     unset_auth(response=response)

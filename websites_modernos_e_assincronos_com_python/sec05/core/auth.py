@@ -41,7 +41,7 @@ def gerar_hash_senha(senha: str) -> str:
 
     hash_senha: str = sha512_crypt.hash(senha, rounds=123_456)
 
-    return  hash_senha
+    return hash_senha
 
 
 def verificar_senha(senha: str, hash_senha: str) -> bool:
