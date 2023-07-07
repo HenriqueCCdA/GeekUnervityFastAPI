@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from fastapi import status, HTTPException
+from fastapi import status
 from fastapi.routing import APIRouter
 from fastapi.requests import Request
 
@@ -14,8 +12,7 @@ from views.admin.duvida_admin import duvida_admin
 from views.admin.post_admin import post_admin
 from views.admin.projeto_admin import projeto_admin
 from views.admin.tag_admin import tag_admin
-from core.auth import get_membro_id
-from controllers.membro_controller import MembroController
+from core.deps import valida_login
 
 
 router = APIRouter(prefix="/admin")
@@ -31,19 +28,20 @@ router.include_router(tag_admin.router)
 
 @router.get('/', name='admin_index')
 async def admin_index(request: Request):
-    membro_id: int = get_membro_id(request=request)
-    context = {"request": request, "ano": datetime.now().year}
+    context = await valida_login(request)
 
-    if membro_id and membro_id > 0:
-        membro_controller: MembroController = MembroController(request)
+    try:
+        if not context["membro"]:
+            return settings.TEMPLATES.TemplateResponse(
+                "admin/limbo.html",
+                context=context,
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+    except KeyError:
+        return settings.TEMPLATES.TemplateResponse(
+            "admin/limbo.html",
+            context=context,
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
-        membro = await membro_controller.get_one_crud(id_obj=membro_id)
-
-        if not membro:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
-        context.update({"membro": membro})
-
-        return settings.TEMPLATES.TemplateResponse("admin/index.html", context=context)
-    else:
-        return settings.TEMPLATES.TemplateResponse("admin/limbo.html", context=context, status_code=status.HTTP_404_NOT_FOUND)
+    return settings.TEMPLATES.TemplateResponse("admin/index.html", context=context)

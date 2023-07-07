@@ -1,13 +1,11 @@
-from datetime import datetime
-
 from fastapi import APIRouter, status
 from fastapi.routing import APIRoute
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
 
 from core.configs import settings
+from core.deps import valida_login
 from controllers.base_controller import BaseController
-
 
 
 class BaseCrudView:
@@ -45,9 +43,26 @@ class BaseCrudView:
         """
         Rota para listar todos os objetos [GET]
         """
+
+        context = await valida_login(object_controller.request)
+
+        try:
+            if not context["membro"]:
+                return settings.TEMPLATES.TemplateResponse(
+                    "admin/limbo.html",
+                    context=context,
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+        except KeyError:
+            return settings.TEMPLATES.TemplateResponse(
+                "admin/limbo.html",
+                context=context,
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
         dados = await object_controller.get_all_crud()
 
-        context = {"request": object_controller.request, "ano": datetime.now().year, "dados": dados}
+        context.update({"dados": dados})
 
         return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/list.html", context=context)
 
@@ -71,12 +86,30 @@ class BaseCrudView:
         """
         Rota para apresentar os detalhes de um objeto [GET]
         """
+
+        context = await valida_login(object_controller.request)
+
+        try:
+            if not context["membro"]:
+                return settings.TEMPLATES.TemplateResponse(
+                    "admin/limbo.html",
+                    context=context,
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+        except KeyError:
+            return settings.TEMPLATES.TemplateResponse(
+                "admin/limbo.html",
+                context=context,
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+
         objeto = await object_controller.get_one_crud(id_obj=obj_id)
 
         if not objeto:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-        context = {"request": object_controller.request, "ano": datetime.now().year, "objeto": objeto}
+        context.update({"objeto": objeto})
 
         if 'details' in str(object_controller.request.url):
             return settings.TEMPLATES.TemplateResponse(f"admin/{self.template_base}/details.html", context=context)
